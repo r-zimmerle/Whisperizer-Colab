@@ -1,122 +1,123 @@
 # Automatic Audio Transcription with Whisper
 
-This repository contains a **Google Colab notebook** for automatically transcribing audio extracted from videos using OpenAI's **Whisper** model. The notebook also checks for GPU availability to accelerate processing.
+This repository contains a **Google Colab notebook** for automatically transcribing audio extracted from various video formats using OpenAI's **Whisper** model. The workflow is split into multiple cells, allowing clear organization: mounting Google Drive, installing dependencies, importing libraries, defining functions, and finally calling those functions.
 
-## 📌 Project Features
+## ✨ Project Features
 
-- **Convert Videos to Audio** 🎥🔊  
-    Extracts audio from `.mp4` files using FFmpeg (supports `.mov`, `.avi`, etc.).
-- **Automatic Transcription** 📝  
-    Uses OpenAI's **Whisper 'turbo'** model for fast and accurate transcription.
-- **Runs on Google Colab** ☁️  
-    The notebook is optimized for **Google Colab**, eliminating the need for local installation.
+- **Extract Audio from Videos**  
+  Uses **FFmpeg** (CPU-based) to extract audio tracks from videos in formats like `.mp4`, `.mov`, `.avi`, and `.mkv`.
+- **Automatic Transcription with Whisper**  
+  Leverages **OpenAI's Whisper** (using GPU if available) for efficient transcription. The notebook demonstrates loading the **"turbo"** model.
+- **Optimized for Google Colab**  
+  Includes easy steps to **mount Google Drive** and check for **GPU availability** to accelerate the transcription process.
 
 ---
 
 ## 🚀 How to Use
 
-### 1️⃣ Open the Notebook in Google Colab
+1. **Open the Notebook in Google Colab**  
+   [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/<your-username>/<your-repo>/blob/main/<your_notebook>.ipynb)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/r-zimmerle/whisper-transcription/blob/main/transcription_colab.ipynb)
+2. **Notebook Structure**  
+   The notebook is organized into **six main cells**:
 
-### 2️⃣ Mount Google Drive
+   1. **Mount Google Drive**  
+      ```python
+      from google.colab import drive
+      drive.mount('/content/drive')
+      ```
+      This allows you to read and write files directly to Google Drive.
 
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
+   2. **Install Dependencies**  
+      ```python
+      !sudo apt-get update -qq
+      !sudo apt-get install -y ffmpeg
+      !pip install -q git+https://github.com/openai/whisper.git
+      ```
+      Installs FFmpeg and the Whisper library.
 
-This allows access to video files and saves transcriptions directly to Google Drive.
+   3. **Imports and GPU Check**  
+      ```python
+      import os
+      import subprocess
+      import torch
+      import whisper
 
-### 3️⃣ Convert Videos to Audio
+      gpu_available = torch.cuda.is_available()
+      gpu_name = torch.cuda.get_device_name(0) if gpu_available else "No GPU detected"
+      device = "cuda" if gpu_available else "cpu"
 
-The notebook extracts audio from **`.mp4` files** and saves them in the configured folder. It also supports **`.mov` and `.avi` formats** (adjust the filter as needed).
+      print(f"GPU available for Whisper: {gpu_available}")
+      print(f"GPU name: {gpu_name}")
+      print(f"Whisper device: {device}")
+      ```
+      This checks if a GPU is available for Whisper. FFmpeg remains on CPU for audio extraction.
 
-```python
-import os
-import subprocess
+   4. **Function: `convert_videos_to_audio`**  
+      ```python
+      def convert_videos_to_audio(input_folder, output_folder):
+          """
+          Convert video files in the supported formats to M4A audio using FFmpeg (CPU).
+          """
+          os.makedirs(output_folder, exist_ok=True)
 
-input_folder = "/content/drive/My Drive/videos"
-output_folder = "/content/drive/My Drive/audios"
+          supported_formats = (".mp4", ".mov", ".avi", ".mkv")
 
-os.makedirs(output_folder, exist_ok=True)
+          for file in os.listdir(input_folder):
+              if file.lower().endswith(supported_formats):
+                  input_path = os.path.join(input_folder, file)
+                  output_name = os.path.splitext(file)[0] + ".m4a"
+                  output_path = os.path.join(output_folder, output_name)
 
-for file in os.listdir(input_folder):
-    if file.lower().endswith((".mp4", ".mov", ".avi")):  # Supports different video formats
-        input_path = os.path.join(input_folder, file)
-        output_path = os.path.join(output_folder, os.path.splitext(file)[0] + ".m4a")
-        
-        cmd = ["ffmpeg", "-i", input_path, "-vn", "-acodec", "aac", "-b:a", "192k", output_path, "-y"]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                  print(f"Extracting audio from: {file}")
 
-print("Conversion completed! Audio files saved in:", output_folder)
-```
+                  cmd = [
+                      "ffmpeg",
+                      "-i", input_path,
+                      "-vn",
+                      "-acodec", "aac",
+                      "-b:a", "192k",
+                      output_path,
+                      "-y"
+                  ]
+                  subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-### 4️⃣ Check GPU Availability
+          print("\n✅ Audio extraction completed! Check your output folder.")
+      ```
 
-Before running the transcription, it's recommended to enable a **GPU** in Google Colab for faster processing.
+   5. **Function: `transcribe_audios`**  
+      ```python
+      def transcribe_audios(input_folder, output_folder, whisper_model="turbo", language="pt"):
+          """
+          Transcribe all .m4a audio files in 'input_folder' using Whisper (GPU if available),
+          then save the transcripts as .txt files in 'output_folder'.
+          """
+          os.makedirs(output_folder, exist_ok=True)
 
-#### 🔹 How to Enable GPU in Google Colab: 
-1. Click on **"Runtime"** in the menu. 
-2. Select **"Change runtime type"**. 
-3. Under **"Hardware accelerator"**, choose **"GPU"**. 
-4. Click **"Save"**. 
+          print(f"\nLoading Whisper model: {whisper_model}")
+          model = whisper.load_model(whisper_model, device=device)
+          print(f"✅ Whisper '{whisper_model}' model loaded successfully!\n")
 
-Now, check if the GPU is available in your session:
+          for file_name in os.listdir(input_folder):
+              if file_name.lower().endswith(".m4a"):
+                  input_path = os.path.join(input_folder, file_name)
+                  output_text_path = os.path.join(output_folder, file_name.replace(".m4a", ".txt"))
 
-```python
-import torch
+                  print(f"Transcribing: {file_name} ...")
 
-gpu_available = torch.cuda.is_available()
-gpu_name = torch.cuda.get_device_name(0) if gpu_available else "No GPU detected"
+                  result = model.transcribe(input_path, language=language)
 
-print(f"GPU available: {gpu_available}")
-print(f"GPU Name: {gpu_name}")
-```
+                  with open(output_text_path, "w", encoding="utf-8") as f:
+                      f.write(result["text"])
 
-### 5️⃣ Install Whisper
+                  print(f"Transcription saved to: {output_text_path}")
 
-```python
-!pip install -q git+https://github.com/openai/whisper.git
-!sudo apt update && sudo apt install ffmpeg
-```
-
-### 6️⃣ Load the Model and Transcribe Audio
-
-The **'turbo' model** was chosen due to its excellent performance in both speed and accuracy.
-
-```python
-import os
-import whisper
-
-input_folder = "/content/drive/My Drive/audios"
-output_folder = "/content/drive/My Drive/transcripts"
-
-os.makedirs(output_folder, exist_ok=True)
-
-model = whisper.load_model("turbo", device="cuda")
-
-for file_name in os.listdir(input_folder):
-    if file_name.endswith(".m4a"):
-        input_path = os.path.join(input_folder, file_name)
-        output_path = os.path.join(output_folder, file_name.replace(".m4a", ".txt"))
-
-        print(f"Transcribing: {file_name} using GPU...")
-        
-        # The language parameter ensures accurate transcription
-        result = model.transcribe(input_path, language="pt")  # In this project, the default language is Portuguese (can be changed)
-        
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(result["text"])
-
-        print(f"Transcription saved at: {output_path}")
-
-print("✅ Transcription completed! All files have been processed.")
-```
+          print("\n✅ All transcriptions completed successfully!")
+      ```
 
 ---
 
-## 📜 Dependencies
+## 📄 Dependencies
 
 If you want to run the project locally, install the required dependencies:
 
@@ -143,4 +144,6 @@ ffmpeg-python
 
 ---
 
-📌 _This repository makes audio transcription easy using Whisper on Google Colab. Feel free to clone, modify, and contribute!_ 🚀
+Feel free to clone, modify, and contribute to this project. Your feedback is always welcome!
+
+Happy transcribing! 🚀

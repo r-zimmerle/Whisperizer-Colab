@@ -16,7 +16,7 @@ This repository contains a **Google Colab notebook** for automatically transcrib
 ## 🚀 How to Use
 
 1. **Open the Notebook in Google Colab**  
-   [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/<your-username>/<your-repo>/blob/main/<your_notebook>.ipynb)
+   [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/r-zimmerle/whisper-transcription/blob/main/transcription_colab.ipynb)
 
 2. **Notebook Structure**  
    The notebook is organized into **six main cells**:

@@ -1,22 +1,27 @@
-# Automatic Audio Transcription with Whisper
+# 🎙️ Whisperizer-Colab
 
-This repository contains a **Google Colab notebook** for automatically transcribing audio extracted from various video formats using OpenAI's **Whisper** model. The workflow is split into multiple cells, allowing clear organization: mounting Google Drive, installing dependencies, importing libraries, defining functions, and finally calling those functions.
+**Whisperizer-Colab** is a modular, Google Colab-friendly notebook for automatically transcribing audio extracted from video files using OpenAI’s **Whisper** model.  
+It combines the power of **FFmpeg** for audio processing with **Whisper** for high-quality speech recognition — optimized for GPU usage when available.
 
-## ✨ Project Features
+---
 
-- **Extract Audio from Videos**  
-  Uses **FFmpeg** (CPU-based) to extract audio tracks from videos in formats like `.mp4`, `.mov`, `.avi`, and `.mkv`.
+## ✨ Features
+
+- **Extract Audio from Video Files**  
+  Uses **FFmpeg** (CPU-based) to extract audio from `.mp4`, `.mov`, `.avi`, and `.mkv` files.
+
 - **Automatic Transcription with Whisper**  
-  Leverages **OpenAI's Whisper** (using GPU if available) for efficient transcription. The notebook demonstrates loading the **"turbo"** model.
+  Leverages **OpenAI's Whisper** (with GPU support) for accurate and efficient transcription. The `"turbo"` model is loaded by default.
+
 - **Optimized for Google Colab**  
-  Includes easy steps to **mount Google Drive** and check for **GPU availability** to accelerate the transcription process.
+  Step-by-step workflow includes mounting Google Drive and checking for GPU availability to speed up transcription.
 
 ---
 
 ## 🚀 How to Use
 
 1. **Open the Notebook in Google Colab**  
-   [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/r-zimmerle/whisper-transcription/blob/main/transcription_colab.ipynb)
+   [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/r-zimmerle/Whisperizer-Colab/blob/main/transcription_colab.ipynb)
 
 2. **Notebook Structure**  
    The notebook is organized into **six main cells**:
